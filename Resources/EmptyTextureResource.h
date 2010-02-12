@@ -49,6 +49,32 @@ public:
         ptr->weak_this = ptr;
         return ptr;
     }
+
+    static EmptyTextureResourcePtr Clone(ITextureResourcePtr tex) {
+        unsigned int w = tex->GetWidth();
+        unsigned int h = tex->GetHeight();
+        unsigned int c = tex->GetChannels();
+        EmptyTextureResourcePtr ptr = Create(w,h,c*8);
+
+        ptr->CopyData(tex);
+        return ptr;
+    }
+    
+    static EmptyTextureResourcePtr CloneChannel(ITextureResourcePtr tex,
+                                                unsigned int channel) {
+        unsigned int w = tex->GetWidth();
+        unsigned int h = tex->GetHeight();
+        unsigned int c = tex->GetChannels();
+        EmptyTextureResourcePtr ptr = Create(w,h,8);
+
+        unsigned char* from = tex->GetData();
+        unsigned char* to = ptr->GetData();
+
+        for (unsigned int x=0; x<w; x++)
+            for (unsigned int y=0; y<h; y++)
+                to[x+y*w] = from[x*c+y*w*c];
+        return ptr;
+    }
             
     ~EmptyTextureResource() { exit(-1);  delete[] data; }
     void Load() {}
@@ -58,9 +84,19 @@ public:
         changedEvent.Notify(TextureChangedEventArg(EmptyTextureResourcePtr(weak_this)));
     }
 
+    void CopyData(ITextureResourcePtr tex) {
+        unsigned int w = tex->GetWidth();
+        unsigned int h = tex->GetHeight();
+        unsigned int c = tex->GetChannels();
+        unsigned char* from = tex->GetData();
+        memcpy(data, from, sizeof(unsigned char)*w*h*c);
+    }
+
+    //void CopyData(Tex<float>* tex);
+
     unsigned char& operator()(const unsigned int x,
                               const unsigned int y,
-                              const unsigned int component) {
+                              const unsigned int component = 0) {
         return data[y*width*channels+x*channels+component];
     }
 };

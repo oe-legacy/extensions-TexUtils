@@ -23,14 +23,28 @@ public:
     Tex(const Tex<T> & copyFromMe) : width(copyFromMe.width),
                                      height(copyFromMe.height),
                                      data(new T[width*height]) {
+        memcpy(data, copyFromMe.data, sizeof(T)*width*height);    
+        /*
          std::copy(copyFromMe.data, 
                    copyFromMe.data + (width*height), 
-                   data);    
+                   data);
+        */
+    }
+
+    Tex(EmptyTextureResource& copyFromMe) {
+        width = copyFromMe.GetWidth();
+        height = copyFromMe.GetHeight();
+        data = new T[width*height];
+        unsigned char* d = copyFromMe.GetData();
+        for (unsigned int x=0; x<width; x++)
+            for (unsigned int y=0; y<height; y++)
+                (*this)(x,y) = (T) d[x+y*width] / (T)255;
     }
 
     Tex(unsigned int width, unsigned int height)
       :  width(width), height(height) {
       data = new T[height*width];
+      memset(data,height*width,0);
     }
 
 
@@ -38,11 +52,12 @@ public:
         if (width != copy.width && height != copy.height)
             throw 42;
         
+        memcpy(data, copy.data, sizeof(T)*width*height);    
+        /*
         std::copy(copy.data,
                   copy.data+(width*height),
                   data);
-
-
+        */
         return *this;
     }
 
@@ -62,9 +77,13 @@ public:
         if (data)
             delete[] data;
         data = new T[width*height];
+
+        memcpy(data, t.data, sizeof(T)*width*height);    
+        /*
         std::copy(t.data, 
                   t.data + (width*height), 
                   data);
+        */
     }
 
     T* operator[](const unsigned int iy) {
@@ -76,6 +95,7 @@ public:
         return data[ix+iy*width];
     }
     void ToTexture(EmptyTextureResourcePtr t, bool dbg=false) ; 
+    void CopyToTexture(EmptyTextureResourcePtr texture);
 
 
   // look up pixel by interpolation
@@ -107,6 +127,8 @@ public:
 //     T v = dy_above * wy_above + dy_below * wy_below;
 //     return v;
 //   }
+//   T operator()(const unsigned int fx, const float fy);
+//   T operator()(const float fx, const unsigned int fy);
 };
 
 

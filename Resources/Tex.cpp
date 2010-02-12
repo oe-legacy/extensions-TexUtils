@@ -39,6 +39,24 @@ template<> void Tex<float>::ToTexture(EmptyTextureResourcePtr texture, bool dbg)
 
 using namespace std;
 
+template<> void Tex<float>::CopyToTexture(EmptyTextureResourcePtr texture) {
+    for(unsigned int x=0;x<width;x++) {
+        for(unsigned int y=0;y<height;y++) {
+            float pix = operator()(x,y);
+                (*texture)(x,y) = (unsigned char)(pix * 255);
+        }
+    }
+}
+
+template<> void Tex<double>::CopyToTexture(EmptyTextureResourcePtr texture) {
+    for(unsigned int x=0;x<width;x++) {
+        for(unsigned int y=0;y<height;y++) {
+            double pix = operator()(x,y);
+                (*texture)(x,y) = (unsigned char)(pix * 255);
+        }
+    }
+}
+
 template<> void Tex<Vector<2,float> >::ToTexture(EmptyTextureResourcePtr texture, bool dbg) {
         
         float _min = 0;
