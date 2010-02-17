@@ -13,6 +13,8 @@
 #include <boost/serialization/weak_ptr.hpp>
 #include <Resources/ITextureResource.h>
 
+#include <cstring> // includes memcpy
+
 using namespace OpenEngine::Resources;
 
 //namespace OpenEngine {
@@ -89,7 +91,7 @@ public:
         unsigned int h = tex->GetHeight();
         unsigned int c = tex->GetChannels();
         unsigned char* from = tex->GetData();
-        memcpy(data, from, sizeof(unsigned char)*w*h*c);
+        std::memcpy(data, from, sizeof(unsigned char)*w*h*c);
     }
 
     //void CopyData(Tex<float>* tex);
