@@ -81,9 +81,9 @@ public:
         return ptr;
     }
             
-    ~EmptyTextureResource() { exit(-1);  delete[] ((unsigned char*)data); }
+    ~EmptyTextureResource() {}
     void Load() {}
-    void Unload() {} //delete data; }
+    void Unload() {}
 
     void RebindTexture() {
         changedEvent.Notify(TextureChangedEventArg(EmptyTextureResourcePtr(weak_this)));
