@@ -1,6 +1,9 @@
 #ifndef _PERLIN_NOISE_GENERATOR_
 #define _PERLIN_NOISE_GENERATOR_
 
+#include <Math/RandomGenerator.h>
+
+
 namespace OpenEngine {
 namespace Utils {
 
@@ -14,7 +17,7 @@ class PerlinNoise {
 
         unsigned int w = max(l->GetWidth(),r->GetWidth());
         unsigned int h = max(l->GetHeight(),r->GetHeight());
-        FloatTexture2DPtr output(new FloatTexture2D(w,h,8));
+        FloatTexture2DPtr output(new FloatTexture2D(w,h,1));
 
         for (unsigned int x=0; x<w; x++) {
             for (unsigned int y=0; y<h; y++) {
@@ -40,7 +43,7 @@ class PerlinNoise {
                                          unsigned int seed = 0) {
         unsigned int w = periodX;
         unsigned int h = periodY;
-        FloatTexture2DPtr output(new FloatTexture2D(w,h,8));
+        FloatTexture2DPtr output(new FloatTexture2D(w,h,1));
 
         RandomGenerator* r = new RandomGenerator();
         r->Seed(seed);
