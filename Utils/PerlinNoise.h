@@ -34,11 +34,12 @@ class PerlinNoise {
         return output;
     }
 
-    static FloatTexture2DPtr CreateNoise(unsigned int period, 
+    static FloatTexture2DPtr CreateNoise(unsigned int periodX,
+                                         unsigned int periodY,
                                          unsigned int amplitude,
                                          unsigned int seed = 0) {
-        unsigned int w = period;
-        unsigned int h = period;
+        unsigned int w = periodX;
+        unsigned int h = periodY;
         FloatTexture2DPtr output(new FloatTexture2D(w,h,8));
 
         RandomGenerator* r = new RandomGenerator();
@@ -51,6 +52,7 @@ class PerlinNoise {
         }
         return output;
     }
+ public:
 
     static void Smooth(FloatTexture2DPtr tex, unsigned int itr) {
         unsigned int w = tex->GetWidth();
@@ -75,8 +77,9 @@ class PerlinNoise {
             }
         }
     }
- public:
-    static FloatTexture2DPtr Generate(unsigned int resolution,
+
+    static FloatTexture2DPtr Generate(unsigned int xResolution,
+                                      unsigned int yResolution,
                                       unsigned int bandwidth,
                                       float mResolution,
                                       float mBandwidth,
@@ -84,7 +87,7 @@ class PerlinNoise {
                                       unsigned int layers,
                                       unsigned int seed) {
 
-        FloatTexture2DPtr output = CreateNoise(resolution, bandwidth);
+        FloatTexture2DPtr output = CreateNoise(xResolution, yResolution, bandwidth);
         Smooth(output,smooth);
 
 #ifdef DEBUG_PRINT
@@ -98,12 +101,13 @@ class PerlinNoise {
         RandomGenerator* r = new RandomGenerator();
         r->Seed(seed);
         for (unsigned int i=1; i<layers; i++) {
-            resolution = resolution * mResolution;
+            xResolution = xResolution * mResolution;
+            yResolution = yResolution * mResolution;
             bandwidth = bandwidth * mBandwidth;
 
             unsigned int rnd = r->UniformInt(0,256);
             FloatTexture2DPtr small = 
-                CreateNoise(resolution, bandwidth, rnd);
+                CreateNoise(xResolution, yResolution, bandwidth, rnd);
             Smooth(small,smooth);
 
             int multiplier = 1;
