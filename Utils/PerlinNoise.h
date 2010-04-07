@@ -49,13 +49,39 @@ class PerlinNoise {
         r->Seed(seed);
         for (unsigned int x=0; x<w; x++) {
             for (unsigned int y=0; y<h; y++) {
-                float value = r->UniformFloat(0,amplitude*2);
+                REAL value = r->UniformFloat(0,amplitude*2);
                 *(output->GetPixel(x,y)) = value;
             }
         }
         return output;
     }
  public:
+
+    static void Normalize(FloatTexture2DPtr tex, REAL bLimit, REAL uLimit) {
+        unsigned int w = tex->GetWidth();
+        unsigned int h = tex->GetHeight();
+
+        // find min and max value in tex
+        REAL min = numeric_limits<REAL>::max();
+        REAL max = numeric_limits<REAL>::min();
+        for (unsigned int x=0; x<w; x++) {
+            for (unsigned int y=0; y<h; y++) {
+                REAL v = *(tex->GetPixel(x,y));
+                if (v<min) min = v;
+                if (v>max) max = v;
+            }
+        }
+
+        // normalize each pixel
+        for (unsigned int x=0; x<w; x++) {
+            for (unsigned int y=0; y<h; y++) {
+                // calculate value between 0 and 1
+                REAL value = (*(tex->GetPixel(x,y))-min)/max;
+                // scale pixels between bLimit and uLimit
+                *(tex->GetPixel(x,y)) = (value * (uLimit-bLimit)) + bLimit;
+            }
+        }
+    }
 
     static void Smooth(FloatTexture2DPtr tex, unsigned int itr) {
         unsigned int w = tex->GetWidth();
