@@ -45,16 +45,58 @@ class PerlinNoise {
         unsigned int h = periodY;
         FloatTexture2DPtr output(new FloatTexture2D(w,h,1));
 
-        RandomGenerator* r = new RandomGenerator();
-        r->Seed(seed);
+        RandomGenerator r;
+        r.Seed(seed);
         for (unsigned int x=0; x<w; x++) {
             for (unsigned int y=0; y<h; y++) {
-                REAL value = r->UniformFloat(0,amplitude*2);
+                REAL value = r.UniformFloat(0,amplitude*2);
                 *(output->GetPixel(x,y)) = value;
             }
         }
         return output;
     }
+
+    static FloatTexture2DPtr Generate(unsigned int xResolution,
+                                      unsigned int yResolution,
+                                      unsigned int bandwidth,
+                                      float mResolution,
+                                      float mBandwidth,
+                                      unsigned int smooth,
+                                      unsigned int layers,
+                                      RandomGenerator& r) {
+
+            FloatTexture2DPtr noise =
+                CreateNoise(xResolution, yResolution, bandwidth, 
+                            r.UniformInt(0,256));
+            Smooth(noise, smooth);
+
+            if (layers != 0) {
+                FloatTexture2DPtr small = 
+                    Generate(xResolution * mResolution, 
+                             yResolution * mResolution, 
+                             bandwidth * mBandwidth,
+                             mResolution, mBandwidth,
+                             smooth, layers-1, r);
+                int multiplier = 1;
+                if (layers % 2 == 0)
+                    multiplier *= -1;
+                noise = Combine(noise, small, multiplier);
+            }
+
+#ifdef DEBUG_PRINT
+            logger.info << "resolution: " << resolution;
+            logger.info << " bandwidth: " << bandwidth << logger.end;
+            Save(small, "small-r"+
+                 Convert::ToString(resolution) + "-b" +
+                 Convert::ToString(bandwidth));
+            logger.info << "multiplier:" << multiplier << logger.end;
+            Save(noise, "noise-r"+
+                 Convert::ToString(resolution) + "-b" +
+                 Convert::ToString(bandwidth));
+#endif
+            return noise;
+    }
+
  public:
 
     static void Normalize(FloatTexture2DPtr tex, REAL bLimit, REAL uLimit) {
@@ -116,50 +158,19 @@ class PerlinNoise {
                                       unsigned int layers,
                                       unsigned int seed) {
 
-        FloatTexture2DPtr output = CreateNoise(xResolution, yResolution, bandwidth);
-        Smooth(output,smooth);
-
 #ifdef DEBUG_PRINT
         logger.info << "resolution: " << resolution;
         logger.info << " bandwidth: " << bandwidth << logger.end;
-        Save(output, "output-r"+
+        Save(noise, "noise-r"+
              Convert::ToString(resolution) + "-b" +
              Convert::ToString(bandwidth));
 #endif
 
-        RandomGenerator* r = new RandomGenerator();
-        r->Seed(seed);
-        for (unsigned int i=1; i<layers; i++) {
-            xResolution = xResolution * mResolution;
-            yResolution = yResolution * mResolution;
-            bandwidth = bandwidth * mBandwidth;
-
-            unsigned int rnd = r->UniformInt(0,256);
-            FloatTexture2DPtr small = 
-                CreateNoise(xResolution, yResolution, bandwidth, rnd);
-            Smooth(small,smooth);
-
-            int multiplier = 1;
-            if (i % 2 == 0)
-                multiplier *= -1;
-
-            output = Combine(output, small, multiplier);
-
-#ifdef DEBUG_PRINT
-            logger.info << "resolution: " << resolution;
-            logger.info << " bandwidth: " << bandwidth << logger.end;
-            Save(small, "small-r"+
-                 Convert::ToString(resolution) + "-b" +
-                 Convert::ToString(bandwidth));
-            logger.info << "multiplier:" << multiplier << logger.end;
-            Save(output, "output-r"+
-                 Convert::ToString(resolution) + "-b" +
-                 Convert::ToString(bandwidth));
-#endif
-        }
-        return output;
+        RandomGenerator r;
+        r.Seed(seed);
+        return Generate(xResolution, yResolution, bandwidth, mResolution,
+                        mBandwidth, smooth, layers, r);
     }
-
 };
 
 } // NS Utils
