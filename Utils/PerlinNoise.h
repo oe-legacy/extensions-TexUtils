@@ -2,7 +2,7 @@
 #define _PERLIN_NOISE_GENERATOR_
 
 #include <Math/RandomGenerator.h>
-
+#include <Resources/Texture3D.h>
 
 namespace OpenEngine {
 namespace Utils {
@@ -37,6 +37,36 @@ class PerlinNoise {
         return output;
     }
 
+    static FloatTexture3DPtr Combine3D(FloatTexture3DPtr l,
+                                     FloatTexture3DPtr r,
+                                     int multiplier = 0) {
+
+        unsigned int w = max(l->GetWidth(),r->GetWidth());
+        unsigned int h = max(l->GetHeight(),r->GetHeight());
+        unsigned int d = max(l->GetDepth(),r->GetDepth());
+        FloatTexture3DPtr output(new FloatTexture3D(w,h,d,1));
+
+        for (unsigned int x=0; x<w; x++) {
+            for (unsigned int y=0; y<h; y++) {
+                for (unsigned int z=0; z<d; z++) {
+                    REAL xCoord = (REAL)x / (REAL)w;
+                    REAL yCoord = (REAL)y / (REAL)h;
+                    REAL zCoord = (REAL)z / (REAL)d;
+
+                    REAL lValue =
+                        l->InterpolatedVoxel(xCoord,yCoord,zCoord)[0];
+
+                    REAL rValue = multiplier *
+                        r->InterpolatedVoxel(xCoord,yCoord,zCoord)[0];
+
+                    REAL value = (lValue + rValue);
+                    *(output->GetVoxel(x,y,z)) = value;
+                }
+            }
+        }
+        return output;
+    }
+
     static FloatTexture2DPtr CreateNoise(unsigned int periodX,
                                          unsigned int periodY,
                                          unsigned int amplitude,
@@ -51,6 +81,29 @@ class PerlinNoise {
             for (unsigned int y=0; y<h; y++) {
                 REAL value = r.UniformFloat(0,amplitude*2);
                 *(output->GetPixel(x,y)) = value;
+            }
+        }
+        return output;
+    }
+
+    static FloatTexture3DPtr CreateNoise3D(unsigned int periodX,
+                                           unsigned int periodY,
+                                           unsigned int periodZ,
+                                           unsigned int amplitude,
+                                           unsigned int seed = 0) {
+        unsigned int w = periodX;
+        unsigned int h = periodY;
+        unsigned int d = periodZ;
+        FloatTexture3DPtr output(new FloatTexture3D(w,h,d,1));
+
+        RandomGenerator r;
+        r.Seed(seed);
+        for (unsigned int x=0; x<w; x++) {
+            for (unsigned int y=0; y<h; y++) {
+                for (unsigned int z=0; z<d; z++) {
+                    REAL value = r.UniformFloat(0,amplitude*2);
+                    *(output->GetVoxel(x,y,z)) = value;
+                }
             }
         }
         return output;
@@ -97,6 +150,49 @@ class PerlinNoise {
             return noise;
     }
 
+    static FloatTexture3DPtr Generate3D(unsigned int xResolution,
+                                        unsigned int yResolution,
+                                        unsigned int zResolution,
+                                        unsigned int bandwidth,
+                                        float mResolution,
+                                        float mBandwidth,
+                                        unsigned int smooth,
+                                        unsigned int layers,
+                                        RandomGenerator& r) {
+
+            FloatTexture3DPtr noise =
+                CreateNoise3D(xResolution, yResolution, zResolution,
+                              bandwidth, r.UniformInt(0,256));
+            Smooth3D(noise, smooth);
+
+            if (layers != 0) {
+                FloatTexture3DPtr small = 
+                    Generate3D(xResolution * mResolution, 
+                             yResolution * mResolution, 
+                             zResolution * mResolution, 
+                             bandwidth * mBandwidth,
+                             mResolution, mBandwidth,
+                             smooth, layers-1, r);
+                int multiplier = 1;
+                if (layers % 2 == 0)
+                    multiplier *= -1;
+                noise = Combine3D(noise, small, multiplier);
+            }
+
+#ifdef DEBUG_PRINT
+            logger.info << "resolution: " << resolution;
+            logger.info << " bandwidth: " << bandwidth << logger.end;
+/*             Save(small, "small-r"+ */
+/*                  Convert::ToString(resolution) + "-b" + */
+/*                  Convert::ToString(bandwidth)); */
+            logger.info << "multiplier:" << multiplier << logger.end;
+/*             Save(noise, "noise-r"+ */
+/*                  Convert::ToString(resolution) + "-b" + */
+/*                  Convert::ToString(bandwidth)); */
+#endif
+            return noise;
+    }
+
  public:
 
     static void Normalize(FloatTexture2DPtr tex, REAL bLimit, REAL uLimit) {
@@ -125,6 +221,38 @@ class PerlinNoise {
         }
     }
 
+    static void Normalize3D(FloatTexture3DPtr tex, REAL bLimit, REAL uLimit) {
+        unsigned int w = tex->GetWidth();
+        unsigned int h = tex->GetHeight();
+        unsigned int d = tex->GetDepth();
+
+        // find min and max value in tex
+        REAL min = numeric_limits<REAL>::max();
+        REAL max = numeric_limits<REAL>::min();
+        for (unsigned int x=0; x<w; x++) {
+            for (unsigned int y=0; y<h; y++) {
+                for (unsigned int z=0; z<d; z++) {
+                    REAL v = *(tex->GetVoxel(x,y,z));
+                    if (v<min) min = v;
+                    if (v>max) max = v;
+                }
+            }
+        }
+
+        // normalize each pixel
+        for (unsigned int x=0; x<w; x++) {
+            for (unsigned int y=0; y<h; y++) {
+                for (unsigned int z=0; z<d; z++) {
+                    // calculate value between 0 and 1
+                    REAL value = (*(tex->GetVoxel(x,y,z))-min)/max;
+                    // scale pixels between bLimit and uLimit
+                    *(tex->GetVoxel(x,y,z)) = 
+                        (value * (uLimit-bLimit)) + bLimit;
+                }
+            }
+        }
+    }
+
     static void Smooth(FloatTexture2DPtr tex, unsigned int itr) {
         unsigned int w = tex->GetWidth();
         unsigned int h = tex->GetHeight();
@@ -144,6 +272,37 @@ class PerlinNoise {
                     REAL c = *(tex->GetPixel(x,y));
                     //*(tex->GetPixel(x,y)) = ((l+r+d+u)+4*c)/8;
                     *(tex->GetPixel(x,y)) = ((l+r+d+u)+(ul+ur+dl+dr)+8*c)/16;
+                }
+            }
+        }
+    }
+
+    static void Smooth3D(FloatTexture3DPtr tex, unsigned int itr) {
+        unsigned int w = tex->GetWidth();
+        unsigned int h = tex->GetHeight();
+        unsigned int d = tex->GetDepth();
+        for (unsigned int i=0; i<itr; i++) {
+            for (unsigned int x=0; x<w; x++) {
+                for (unsigned int y=0; y<h; y++) {
+                    for (unsigned int z=0; z<d; z++) {
+
+                        REAL l = *(tex->GetVoxel(x-1,y,z));
+                        REAL r = *(tex->GetVoxel(x+1,y,z));
+                        REAL d = *(tex->GetVoxel(x,y-1,z));
+                        REAL u = *(tex->GetVoxel(x,y+1,z));
+
+                        REAL ul = *(tex->GetVoxel(x-1,y+1,z));
+                        REAL ur = *(tex->GetVoxel(x+1,y+1,z));
+                        REAL dl = *(tex->GetVoxel(x-1,y-1,z));
+                        REAL dr = *(tex->GetVoxel(x+1,y-1,z));
+
+                        REAL c = *(tex->GetVoxel(x,y,z));
+
+                        // @todo: do this
+                        //*(tex->GetPixel(x,y)) = ((l+r+d+u)+4*c)/8;
+                        *(tex->GetVoxel(x,y,z)) = 
+                            ((l+r+d+u)+(ul+ur+dl+dr)+8*c)/16;
+                    }
                 }
             }
         }
@@ -171,6 +330,32 @@ class PerlinNoise {
         return Generate(xResolution, yResolution, bandwidth, mResolution,
                         mBandwidth, smooth, layers, r);
     }
+
+    static FloatTexture3DPtr Generate3D(unsigned int xResolution,
+                                      unsigned int yResolution,
+                                      unsigned int zResolution,
+                                      unsigned int bandwidth,
+                                      float mResolution,
+                                      float mBandwidth,
+                                      unsigned int smooth,
+                                      unsigned int layers,
+                                      unsigned int seed) {
+
+#ifdef DEBUG_PRINT
+        logger.info << "resolution: " << resolution;
+        logger.info << " bandwidth: " << bandwidth << logger.end;
+/*         Save(noise, "noise-r"+ */
+/*              Convert::ToString(resolution) + "-b" + */
+/*              Convert::ToString(bandwidth)); */
+#endif
+
+        RandomGenerator r;
+        r.Seed(seed);
+        return Generate3D(xResolution, yResolution, zResolution,
+                          bandwidth, mResolution,
+                          mBandwidth, smooth, layers, r);
+    }
+
 };
 
 } // NS Utils
