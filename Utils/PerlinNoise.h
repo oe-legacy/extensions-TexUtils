@@ -123,7 +123,6 @@ class PerlinNoise {
             FloatTexture2DPtr noise =
                 CreateNoise(xResolution, yResolution, bandwidth, 
                             r.UniformInt(0,256));
-            Smooth(noise, smooth);
 
             if (layers != 0) {
                 FloatTexture2DPtr small = 
@@ -136,6 +135,7 @@ class PerlinNoise {
                 if (layers % 2 == 0)
                     multiplier *= -1;
                 noise = Combine(noise, small, multiplier);
+                Smooth(noise, smooth);
             }
 
 #ifdef DEBUG_PRINT
@@ -165,8 +165,6 @@ class PerlinNoise {
             FloatTexture3DPtr noise =
                 CreateNoise3D(xResolution, yResolution, zResolution,
                               bandwidth, r.UniformInt(0,256));
-            Smooth3D(noise, smooth);
-
             {
             // dump layers
             string layername = "layer";
@@ -188,6 +186,7 @@ class PerlinNoise {
                 if (layers % 2 == 0)
                     multiplier *= -1;
                 noise = Combine3D(small, noise, multiplier);
+                Smooth3D(noise, smooth);
 
                 {
                     string layername = "combinedlayers";
