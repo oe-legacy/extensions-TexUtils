@@ -165,6 +165,7 @@ class PerlinNoise {
             FloatTexture3DPtr noise =
                 CreateNoise3D(xResolution, yResolution, zResolution,
                               bandwidth, r.UniformInt(0,256));
+            /*
             {
             // dump layers
             string layername = "layer";
@@ -173,7 +174,7 @@ class PerlinNoise {
                 ::DumpTexture(ToRGBAinAlphaChannel3D(GetNormalize3D(noise,0,1)),
                               "output/" + layername);
             }
-
+            */
             if (layers != 0) {
                 FloatTexture3DPtr small = 
                     Generate3D(xResolution * mResolution, 
@@ -187,7 +188,7 @@ class PerlinNoise {
                     multiplier *= -1;
                 noise = Combine3D(small, noise, multiplier);
                 Smooth3D(noise, smooth);
-
+                /*
                 {
                     string layername = "combinedlayers";
                     layername += Convert::ToString(layers);
@@ -195,6 +196,7 @@ class PerlinNoise {
                 ::DumpTexture(ToRGBAinAlphaChannel3D(GetNormalize3D(noise,0,1)),
                               "output/" + layername);
                 }
+                */
             }
 
 #ifdef DEBUG_PRINT
