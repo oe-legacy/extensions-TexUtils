@@ -97,7 +97,7 @@ class PerlinNoise {
         unsigned int d = periodZ;
         FloatTexture3DPtr output(new FloatTexture3D(w,h,d,1));
 
-        logger.info << "amplitude: " << amplitude << logger.end;
+        //logger.info << "amplitude: " << amplitude << logger.end;
         RandomGenerator r;
         r.Seed(seed);
         for (unsigned int x=0; x<w; x++) {
@@ -281,8 +281,10 @@ class PerlinNoise {
             }
         }
 
+        /*
         logger.info << "min: " << min << logger.end;
         logger.info << "max: " << max << logger.end;
+        */
 
         // normalize each pixel
         for (unsigned int x=0; x<w; x++) {
