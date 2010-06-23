@@ -116,7 +116,7 @@ class PerlinNoise {
                                       unsigned int bandwidth,
                                       float mResolution,
                                       float mBandwidth,
-                                      unsigned int smooth,
+                                      unsigned int blur,
                                       unsigned int layers,
                                       RandomGenerator& r) {
 
@@ -124,30 +124,49 @@ class PerlinNoise {
                 CreateNoise(xResolution, yResolution, bandwidth, 
                             r.UniformInt(0,256));
 
+#ifdef DEBUG_PRINT
+            FloatTexture2DPtr noiseClone(noise->Clone());
+            PerlinNoise::Normalize(noiseClone,0,1); 
+            FloatTexture2DPtr noiseTexture = 
+                PerlinNoise::ToRGBAinAlphaChannel(noiseClone);
+            TextureTool<unsigned char>::
+                DumpTexture(ToUCharTexture(noiseTexture),
+                            std::string("generated") +
+                            "-rx" + Convert::ToString(xResolution) +
+                            "-b"  + Convert::ToString(bandwidth) +
+                            ".png");
+#endif
             if (layers != 0) {
                 FloatTexture2DPtr small = 
                     Generate(xResolution * mResolution, 
                              yResolution * mResolution, 
                              bandwidth * mBandwidth,
                              mResolution, mBandwidth,
-                             smooth, layers-1, r);
-                int multiplier = 1;
-                if (layers % 2 == 0)
-                    multiplier *= -1;
-                noise = Combine(noise, small, multiplier);
-                Smooth(noise, smooth);
+                             blur, layers-1, r);
+                //int multiplier = 1;
+                //if (layers % 2 == 0)
+                    //multiplier *= -1;
+                noise = Combine(noise, small/*, multiplier*/);
+                Blur(noise, blur);
+
+#ifdef DEBUG_PRINT
+                FloatTexture2DPtr smallClone(noise->Clone());
+                PerlinNoise::Normalize(smallClone,0,1);
+                FloatTexture2DPtr smallTexture = 
+                    PerlinNoise::ToRGBAinAlphaChannel(smallClone);
+                TextureTool<unsigned char>::
+                    DumpTexture(ToUCharTexture(smallTexture),
+                                std::string("combined") +
+                                "-l" + Convert::ToString(layers) +
+                                "-b" + Convert::ToString(bandwidth) +
+                                ".png");
+#endif
             }
 
 #ifdef DEBUG_PRINT
             logger.info << "resolution: " << resolution;
             logger.info << " bandwidth: " << bandwidth << logger.end;
-            Save(small, "small-r"+
-                 Convert::ToString(resolution) + "-b" +
-                 Convert::ToString(bandwidth));
             logger.info << "multiplier:" << multiplier << logger.end;
-            Save(noise, "noise-r"+
-                 Convert::ToString(resolution) + "-b" +
-                 Convert::ToString(bandwidth));
 #endif
             return noise;
     }
@@ -158,7 +177,7 @@ class PerlinNoise {
                                         unsigned int bandwidth,
                                         float mResolution,
                                         float mBandwidth,
-                                        unsigned int smooth,
+                                        unsigned int blur,
                                         unsigned int layers,
                                         RandomGenerator& r) {
 
@@ -182,12 +201,12 @@ class PerlinNoise {
                                zResolution * mResolution, 
                                bandwidth * mBandwidth,
                                mResolution, mBandwidth,
-                               smooth, layers-1, r);
+                               blur, layers-1, r);
                 int multiplier = 1;
                 if (layers % 2 == 0)
                     multiplier *= -1;
                 noise = Combine3D(small, noise, multiplier);
-                Smooth3D(noise, smooth);
+                Blur3D(noise, blur);
                 /*
                 {
                     string layername = "combinedlayers";
@@ -300,7 +319,7 @@ class PerlinNoise {
         }
     }
 
-    static void Smooth(FloatTexture2DPtr tex, unsigned int itr, int halfsize = 1) {
+    static void Blur(FloatTexture2DPtr tex, unsigned int itr, int halfsize = 1) {
         unsigned int w = tex->GetWidth();
         unsigned int h = tex->GetHeight();
         unsigned int channels = tex->GetChannels();
@@ -356,7 +375,7 @@ class PerlinNoise {
     */
     }
 
-    static void Smooth3D(FloatTexture3DPtr tex,
+    static void Blur3D(FloatTexture3DPtr tex,
                          unsigned int itr, int halfsize = 1) {
         unsigned int w = tex->GetWidth();
         unsigned int h = tex->GetHeight();
@@ -469,7 +488,7 @@ class PerlinNoise {
                                       unsigned int bandwidth,
                                       float mResolution,
                                       float mBandwidth,
-                                      unsigned int smooth,
+                                      unsigned int blur,
                                       unsigned int layers,
                                       unsigned int seed) {
 
@@ -484,7 +503,7 @@ class PerlinNoise {
         RandomGenerator r;
         r.Seed(seed);
         return Generate(xResolution, yResolution, bandwidth, mResolution,
-                        mBandwidth, smooth, layers, r);
+                        mBandwidth, blur, layers, r);
     }
 
     static FloatTexture3DPtr Generate3D(unsigned int xResolution,
@@ -493,7 +512,7 @@ class PerlinNoise {
                                         unsigned int bandwidth,
                                         float mResolution,
                                         float mBandwidth,
-                                        unsigned int smooth,
+                                        unsigned int blur,
                                         unsigned int layers,
                                         unsigned int seed) {
 
@@ -509,7 +528,7 @@ class PerlinNoise {
         r.Seed(seed);
         return Generate3D(xResolution, yResolution, zResolution,
                           bandwidth, mResolution,
-                          mBandwidth, smooth, layers, r);
+                          mBandwidth, blur, layers, r);
     }
 
 
