@@ -10,7 +10,7 @@ namespace Utils {
 
 typedef float REAL;
 
-class PerlinNoise {
+class ValueNoise {
  private:
     static FloatTexture2DPtr Combine(FloatTexture2DPtr l,
                                      FloatTexture2DPtr r,
@@ -126,9 +126,9 @@ class PerlinNoise {
 
 #ifdef DEBUG_PRINT
             FloatTexture2DPtr noiseClone(noise->Clone());
-            PerlinNoise::Normalize(noiseClone,0,1); 
+            Normalize(noiseClone,0,1); 
             FloatTexture2DPtr noiseTexture = 
-                PerlinNoise::ToRGBAinAlphaChannel(noiseClone);
+                ToRGBAinAlphaChannel(noiseClone);
             TextureTool<unsigned char>::
                 DumpTexture(ToUCharTexture(noiseTexture),
                             std::string("generated") +
@@ -151,9 +151,9 @@ class PerlinNoise {
 
 #ifdef DEBUG_PRINT
                 FloatTexture2DPtr smallClone(noise->Clone());
-                PerlinNoise::Normalize(smallClone,0,1);
+                Normalize(smallClone,0,1);
                 FloatTexture2DPtr smallTexture = 
-                    PerlinNoise::ToRGBAinAlphaChannel(smallClone);
+                    ToRGBAinAlphaChannel(smallClone);
                 TextureTool<unsigned char>::
                     DumpTexture(ToUCharTexture(smallTexture),
                                 std::string("combined") +
