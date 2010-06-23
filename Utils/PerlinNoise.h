@@ -628,6 +628,23 @@ static FloatTexture2DPtr ToRGBAinAlphaChannel(FloatTexture2DPtr tex) {
     return output;
 }
 
+static UCharTexture2DPtr ToRGBAfromLuminance(UCharTexture2DPtr tex) {
+    unsigned int w = tex->GetWidth();
+    unsigned int h = tex->GetHeight();
+    UCharTexture2DPtr output(new UCharTexture2D(w,h,4));
+    unsigned char* din = tex->GetData();
+    unsigned char* dout = output->GetData();
+    for (unsigned int y=0; y<h; y++) {
+        for (unsigned int x=0; x<w; x++) {
+            dout[(x+y*w)*4+0] = din[(x+y*w)];
+            dout[(x+y*w)*4+1] = din[(x+y*w)];
+            dout[(x+y*w)*4+2] = din[(x+y*w)];
+            dout[(x+y*w)*4+3] = 255; 
+        }
+    }
+    return output;
+}
+
 static FloatTexture3DPtr ToRGBAinAlphaChannel3D(FloatTexture3DPtr tex) {
     unsigned int w = tex->GetWidth();
     unsigned int h = tex->GetHeight();
