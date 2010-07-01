@@ -91,8 +91,8 @@ class ValueNoise {
                 //int multiplier = 1;
                 //if (layers % 2 == 0)
                     //multiplier *= -1;
-                noise = Combine(noise, small/*, multiplier*/);
-                Blur(noise, blur);
+                noise = TexUtils::Combine(noise, small/*, multiplier*/);
+                TexUtils::Blur(noise, blur);
 
 #ifdef DEBUG_PRINT
                 FloatTexture2DPtr smallClone(noise->Clone());
@@ -150,8 +150,8 @@ class ValueNoise {
                 int multiplier = 1;
                 if (layers % 2 == 0)
                     multiplier *= -1;
-                noise = Combine3D(small, noise, multiplier);
-                Blur3D(noise, blur);
+                noise = TexUtils::Combine3D(small, noise, multiplier);
+                TexUtils::Blur3D(noise, blur);
                 /*
                 {
                     string layername = "combinedlayers";
