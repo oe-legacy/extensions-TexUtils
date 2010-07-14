@@ -47,7 +47,8 @@ namespace OpenEngine {
 
                 return Texture2DPtr(T)(dst);
             }
-            static UCharTexture2DPtr ToUCharTexture(FloatTexture2DPtr tex) {
+
+            template <class T> static UCharTexture2DPtr ToUCharTexture(Texture2DPtr(T) tex) {
                 unsigned int w = tex->GetWidth();
                 unsigned int h = tex->GetHeight();
                 unsigned int c = tex->GetChannels();
@@ -81,11 +82,11 @@ namespace OpenEngine {
                 return output;
             }
         
-            static FloatTexture2DPtr ToFloatTexture(UCharTexture2DPtr tex) {
+            template <class T> static Texture2DPtr(T) ToFloatTexture(UCharTexture2DPtr tex) {
                 unsigned int w = tex->GetWidth();
                 unsigned int h = tex->GetHeight();
                 unsigned int c = tex->GetChannels();
-                FloatTexture2DPtr output(new FloatTexture2D(w,h,c));
+                Texture2DPtr(T) output(new Texture2D<T>(w,h,c));
             
                 for (unsigned int ch=0; ch<c; ch++) {
                     for (unsigned int x=0; x<w; x++) {
@@ -179,18 +180,19 @@ namespace OpenEngine {
                 return output;
             }
 
-            static UCharTexture2DPtr ToRGBAfromLuminance(UCharTexture2DPtr tex) {
+            template <class T> static Texture2DPtr(T) ToRGBAfromLuminance(Texture2DPtr(T) tex) {
                 unsigned int w = tex->GetWidth();
                 unsigned int h = tex->GetHeight();
-                UCharTexture2DPtr output(new UCharTexture2D(w,h,4));
-                unsigned char* din = tex->GetData();
-                unsigned char* dout = output->GetData();
+                Texture2DPtr(T) output(new Texture2D<T>(w,h,4));
+                T* din = tex->GetData();
+                T* dout = output->GetData();
+                T max = (typeid(T)==typeid(unsigned char)) ? 255 : 1.0;
                 for (unsigned int y=0; y<h; y++) {
                     for (unsigned int x=0; x<w; x++) {
                         dout[(x+y*w)*4+0] = din[(x+y*w)];
                         dout[(x+y*w)*4+1] = din[(x+y*w)];
                         dout[(x+y*w)*4+2] = din[(x+y*w)];
-                        dout[(x+y*w)*4+3] = 255; 
+                        dout[(x+y*w)*4+3] = max;
                     }
                 }
                 return output;
