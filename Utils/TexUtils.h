@@ -13,6 +13,7 @@
 #include <Logging/Logger.h>
 #include <Resources/Texture2D.h>
 #include <Resources/Texture3D.h>
+#include <limits>
 
 typedef float REAL;
 
@@ -388,8 +389,8 @@ namespace OpenEngine {
                 unsigned int h = tex->GetHeight();
 
                 // find min and max value in tex
-                REAL min = numeric_limits<REAL>::max();
-                REAL max = numeric_limits<REAL>::min();
+                REAL min = std::numeric_limits<REAL>::max();
+                REAL max = std::numeric_limits<REAL>::min();
                 for (unsigned int x=0; x<w; x++) {
                     for (unsigned int y=0; y<h; y++) {
                         REAL v = *(tex->GetPixel(x,y));
