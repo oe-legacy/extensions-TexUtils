@@ -40,7 +40,7 @@ private:
         case 24: this->format = RGB; break;
         case 32: this->format = RGBA; break;                    
         }
-        this->data = new unsigned char[width*height*d/8];
+        this->data = new unsigned char[width*height*d/8]();
     }
 public:
     static EmptyTextureResourcePtr Create(unsigned int w,
