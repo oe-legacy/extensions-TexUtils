@@ -76,7 +76,8 @@ namespace OpenEngine {
                              ((*(tex->GetPixel(x,y) + ch)-min)/max) * 255;
                             */
                             *(output->GetPixel(x,y) + ch) =
-                                *(tex->GetPixel(x,y) + ch) * 255;
+			      (unsigned char)
+			      (*(tex->GetPixel(x,y) + ch) * 255);
                         }
                     }
                 }
@@ -187,7 +188,7 @@ namespace OpenEngine {
                 Texture2DPtr(T) output(new Texture2D<T>(w,h,4));
                 T* din = tex->GetData();
                 T* dout = output->GetData();
-                T max = (typeid(T)==typeid(unsigned char)) ? 255 : 1.0;
+                T max = (typeid(T)==typeid(unsigned char)) ? 255 : 1;
                 for (unsigned int y=0; y<h; y++) {
                     for (unsigned int x=0; x<w; x++) {
                         dout[(x+y*w)*4+0] = din[(x+y*w)];
@@ -483,7 +484,7 @@ namespace OpenEngine {
                         REAL yCoord = (REAL)y / (REAL)h;
 
                         REAL lValue =
-                            l->InterpolatedPixel(xCoord,yCoord)[0];
+			  l->InterpolatedPixel(xCoord,yCoord)[0];
 
                         REAL rValue = multiplier *
                             r->InterpolatedPixel(xCoord,yCoord)[0];
