@@ -1,0 +1,5 @@
+# dist file for TexUtils
+
+darcs      /extensions/TexUtils            http://openengine.dk/code/extensions/TexUtils
+darcs-dev  /extensions/TexUtils            fh.daimi.au.dk:/users/cgd/code/extensions/TexUtils
+
