@@ -82,7 +82,7 @@ class ValueNoise {
                             ".png");
 #endif
             if (layers != 0) {
-                FloatTexture2DPtr small = 
+                FloatTexture2DPtr smallTex = 
                     Generate(xResolution * mResolution, 
                              yResolution * mResolution, 
                              bandwidth * mBandwidth,
@@ -91,7 +91,7 @@ class ValueNoise {
                 //int multiplier = 1;
                 //if (layers % 2 == 0)
                     //multiplier *= -1;
-                noise = TexUtils::Combine(noise, small/*, multiplier*/);
+                noise = TexUtils::Combine(noise, smallTex/*, multiplier*/);
                 TexUtils::Blur(noise, blur);
 
 #ifdef DEBUG_PRINT
