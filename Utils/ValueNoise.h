@@ -140,7 +140,7 @@ class ValueNoise {
             }
             */
             if (layers != 0) {
-                FloatTexture3DPtr small = 
+                FloatTexture3DPtr smallTex = 
                     Generate3D(xResolution * mResolution, 
                                yResolution * mResolution, 
                                zResolution * mResolution, 
@@ -150,7 +150,7 @@ class ValueNoise {
                 int multiplier = 1;
                 if (layers % 2 == 0)
                     multiplier *= -1;
-                noise = TexUtils::Combine3D(small, noise, multiplier);
+                noise = TexUtils::Combine3D(smallTex, noise, multiplier);
                 TexUtils::Blur3D(noise, blur);
                 /*
                 {
