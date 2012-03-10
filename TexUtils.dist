@@ -1,5 +1,4 @@
 # dist file for TexUtils
-
-darcs      /extensions/TexUtils            http://openengine.dk/code/extensions/TexUtils
-darcs-dev  /extensions/TexUtils            fh.daimi.au.dk:/users/cgd/code/extensions/TexUtils
+git      /extensions/TexUtils            git://github.com/oe-legacy/extensions-TexUtils.git
+git-dev  /extensions/TexUtils            git@github.com:oe-legacy/extensions-TexUtils.git
 
